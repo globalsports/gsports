@@ -8,7 +8,6 @@ Gsports
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Environment Variables](#environment-variables)
 - [Running the Project](#running-the-project)
 - [File Structure](#file-structure)
 
