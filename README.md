@@ -58,18 +58,6 @@ Or using yarn:
 yarn install
 ```
 
-## Environment Variables
-
-Create a `.env.local` file in the root of the project and add the following environment variables:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-```
 
 - Replace `your_supabase_url` and `your_supabase_anon_key` with the details from your Supabase project.
 - Set up NextAuth credentials for Google authentication with `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
