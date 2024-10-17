@@ -58,10 +58,6 @@ yarn install
 ```
 
 
-- Replace `your_supabase_url` and `your_supabase_anon_key` with the details from your Supabase project.
-- Set up NextAuth credentials for Google authentication with `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
-- Make sure to configure any additional environment variables required by your project.
-
 ## Running the Project
 
 ### 1. Start the development server
