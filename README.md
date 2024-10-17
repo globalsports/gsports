@@ -40,7 +40,7 @@ git clone https://github.com/globalsports/gsports.git
 ### 2. Navigate to the project directory
 
 ```bash
-cd your-repository
+cd gsports
 ```
 
 ### 3. Install dependencies
