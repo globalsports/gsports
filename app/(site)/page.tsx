@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import Title from "@/components/custom/Title";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import Booking from "@/components/booking/Booking";
 
 export default function Home() {
   const images = [
@@ -20,16 +20,10 @@ export default function Home() {
     "images/court-4.jpg",
   ];
 
-  const router = useRouter();
-
-  const handleBookNow = () => {
-    // Navigate to booking page
-    router.push("/booking");
-  };
-
   return (
     <>
       <Title />
+      <Booking />
       <Carousel className="w-full my-5">
         <CarouselContent>
           {images.map((src, index) => (
@@ -109,16 +103,6 @@ export default function Home() {
         </a>{" "}
         or call (02) 1234 5678. Advanced booking is required for all event
         rentals.
-      </div>
-
-      {/* Book Now Button - Floating at the bottom */}
-      <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2">
-        <Button
-          onClick={handleBookNow}
-          className="bg-teal-500 text-white px-10 py-5 font-semibold text-lg rounded-md shadow-md hover:bg-teal-700"
-        >
-          Book Now
-        </Button>
       </div>
     </>
   );

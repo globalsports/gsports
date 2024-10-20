@@ -5,10 +5,10 @@ import { addDays, subDays } from "date-fns";
 import { FaTrashAlt } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DatePicker } from "@/components/custom/DatePicker";
-import SlotBooking from "@/components/custom/SlotBooking";
+import { DatePicker } from "@/components/booking/DatePicker";
+import SlotBooking from "@/components/booking/SlotBooking";
 
-export default function Home() {
+export default function Booking() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [selectedSlots, setSelectedSlots] = React.useState<
     { court: string; time: string; cost: number }[]
