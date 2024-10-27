@@ -2,6 +2,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { GrPrevious, GrNext } from "react-icons/gr";
 import { Skeleton } from "../ui/skeleton";
+import { format } from "date-fns";
 
 interface SlotBookingProps {
   date: Date | undefined;
@@ -95,7 +96,13 @@ const SlotBooking = ({
   };
 
   return (
-    <div>
+    <div>{isLoading ? (
+      <Skeleton className="h-12 w-full  my-3" />
+    ) :(
+      <div className="text-2xl font-extralight text-gray-600 text-center flex-1 my-3">
+        <div className="text-lg">{date && format(date, "PPP")}</div>
+      </div>)}
+
       {isLoading ? (
         <Skeleton className="h-[36rem] w-full" />
       ) : (
