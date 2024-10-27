@@ -54,7 +54,7 @@ export default function Home() {
       {isLoading ? (
         <Skeleton className="h-24 w-full mx-auto" />
       ) : (
-        <div className="text-md text-justify mt-4">
+        <div className="text-md mt-4">
           Emerton Youth Recreation Centre is a community facility designed for
           indoor recreation activities. The centre features a large indoor fully
           marked court available for Badminton, Basketball, Futsal, Netball, and

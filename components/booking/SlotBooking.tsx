@@ -100,8 +100,8 @@ const SlotBooking = ({
         <Skeleton className="h-[36rem] w-full" />
       ) : (
         <div className="overflow-x-auto">
-          <div className="border border-gray-500 rounded-sm">
-            <div className="flex overflow-hidden">
+          <div className="rounded-sm">
+            <div className="sm:flex overflow-hidden hidden">
               <Button
                 className="bg-teal-600 flex-1 rounded-none"
                 onClick={onPreviousDate}
