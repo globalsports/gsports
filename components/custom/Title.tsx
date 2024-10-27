@@ -1,11 +1,18 @@
 import React from "react";
+import { Skeleton } from "../ui/skeleton";
 
-type Props = {};
+type Props = {
+  isLoading: boolean;
+};
 
-const Title = (props: Props) => {
+const Title = ({ isLoading }: Props) => {
   return (
-    <div className="">
-      <h1>Book Badminton at Emerton Youth Recreation Centre</h1>
+    <div className="text-center">
+      {isLoading ? (
+        <Skeleton className="h-16 w-3/4 mx-auto my-5" />
+      ) : (
+        <h1>Book Badminton at Emerton Youth Recreation Centre</h1>
+      )}
     </div>
   );
 };

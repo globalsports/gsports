@@ -25,13 +25,13 @@ export function DatePicker({
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
-              className="w-[280px] justify-start text-left font-normal"
+              className="bg-blue-50 hover:bg-teal-100 justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent className="w-auto p-0 bg-teal-100">
             <Calendar
               mode="single"
               selected={date}

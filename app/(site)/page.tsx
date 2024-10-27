@@ -9,10 +9,14 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import Title from "@/components/custom/Title";
-import { Button } from "@/components/ui/button";
 import Booking from "@/components/booking/Booking";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = React.useState(true);
+  React.useEffect(() => {
+    setTimeout(() => setIsLoading(false), 2000);
+  }, []);
   const images = [
     "images/court-1.jpg",
     "images/court-2.jpg",
@@ -22,40 +26,47 @@ export default function Home() {
 
   return (
     <>
-      <Title />
+      <Title isLoading={isLoading} />
       <Booking />
-      <Carousel className="w-full my-5">
-        <CarouselContent>
-          {images.map((src, index) => (
-            <CarouselItem key={index}>
-              <Card>
-                <CardContent className="h-[25rem] p-0">
-                  <img
-                    src={src}
-                    alt={`Court ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </CardContent>
-              </Card>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="hidden sm:flex" />
-        <CarouselNext className="hidden sm:flex" />
-      </Carousel>
-
-      <div className="text-md text-justify mt-4">
-        Emerton Youth Recreation Centre is a community facility designed for
-        indoor recreation activities. The centre features a large indoor fully
-        marked court available for Badminton, Basketball, Futsal, Netball, and
-        Volleyball. Centre also offers community BBQ’s and outdoor seating, a
-        foyer area available for meetings, and plenty of onsite parking. To
-        enquire about booking Emerton Youth Recreation Centre, please email{" "}
-        <a href="mailto:Tele.Tuivanu@blacktown.nsw.gov.au">
-          Tele.Tuivanu@blacktown.nsw.gov.au
-        </a>
-        .
-      </div>
+      {isLoading ? (
+        <Skeleton className="h-[36rem] w-full mx-auto" />
+      ) : (
+        <Carousel className="w-full my-5">
+          <CarouselContent>
+            {images.map((src, index) => (
+              <CarouselItem key={index}>
+                <Card>
+                  <CardContent className="h-[25rem] p-0">
+                    <img
+                      src={src}
+                      alt={`Court ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+      )}
+      {isLoading ? (
+        <Skeleton className="h-24 w-full mx-auto" />
+      ) : (
+        <div className="text-md text-justify mt-4">
+          Emerton Youth Recreation Centre is a community facility designed for
+          indoor recreation activities. The centre features a large indoor fully
+          marked court available for Badminton, Basketball, Futsal, Netball, and
+          Volleyball. Centre also offers community BBQ’s and outdoor seating, a
+          foyer area available for meetings, and plenty of onsite parking. To
+          enquire about booking Emerton Youth Recreation Centre, please email{" "}
+          <a href="mailto:Tele.Tuivanu@blacktown.nsw.gov.au">
+            Tele.Tuivanu@blacktown.nsw.gov.au
+          </a>
+          .
+        </div>
+      )}
 
       <h2 className="text-[30px] font-semibold mt-10">Features</h2>
       <ul className="list-disc pl-6 mt-4 text-md">
