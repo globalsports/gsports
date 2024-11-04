@@ -63,8 +63,18 @@ const SlotBooking = ({
     { court: "Court 6", time: "8pm" },
   ];
 
-  const [bookedSlots] =
-    React.useState<{ court: string; time: string }[]>(initiallyBookedSlots);
+  const [bookedSlots] = React.useState<{ court: string; time: string }[]>(
+    initiallyBookedSlots
+  );
+
+  const isPastTime = (time: string) => {
+    if (!date) return false;
+    const currentDate = new Date();
+    const slotDate = new Date(date);
+    const timeHour = parseInt(time.replace("pm", "")) + 12; 
+    slotDate.setHours(timeHour, 0, 0, 0);
+    return slotDate < currentDate;
+  };
 
   const isBooked = (court: string, time: string) => {
     return bookedSlots.some(
@@ -79,6 +89,8 @@ const SlotBooking = ({
   };
 
   const handleSlotClick = (court: string, time: string) => {
+    if (isPastTime(time)) return;
+    
     const isAlreadySelected = isSelected(court, time);
 
     if (isAlreadySelected) {
@@ -95,13 +107,22 @@ const SlotBooking = ({
     }
   };
 
+  const getSlotStatus = (court: string, time: string) => {
+    if (isPastTime(time)) return "Past";
+    if (isBooked(court, time)) return "Booked";
+    if (isSelected(court, time)) return "Selected";
+    return "Available";
+  };
+
   return (
-    <div>{isLoading ? (
-      <Skeleton className="h-12 w-full  my-3" />
-    ) :(
-      <div className="text-2xl font-extralight text-gray-600 text-center flex-1 my-3">
-        <div className="text-lg">{date && format(date, "PPP")}</div>
-      </div>)}
+    <div>
+      {isLoading ? (
+        <Skeleton className="h-12 w-full my-3" />
+      ) : (
+        <div className="text-2xl font-extralight text-gray-600 text-center flex-1 my-3">
+          <div className="text-lg">{date && format(date, "PPP")}</div>
+        </div>
+      )}
 
       {isLoading ? (
         <Skeleton className="h-[36rem] w-full" />
@@ -110,74 +131,95 @@ const SlotBooking = ({
           <div className="rounded-sm">
             <div className="sm:flex overflow-hidden hidden">
               <Button
-                className="bg-teal-600 flex-1 rounded-none"
+                className="bg-teal-600 flex-1 rounded-none hover:bg-teal-700 transition-colors"
                 onClick={onPreviousDate}
               >
-                <GrPrevious />
+                <GrPrevious className="mr-2" />
                 Previous Day
               </Button>
               <Button
-                className="bg-teal-600 flex-1 rounded-none border-x"
+                className="bg-teal-600 flex-1 rounded-none border-x hover:bg-teal-700 transition-colors"
                 onClick={onTodayDate}
               >
                 Today
               </Button>
               <Button
-                className="bg-teal-600 flex-1 rounded-none"
+                className="bg-teal-600 flex-1 rounded-none hover:bg-teal-700 transition-colors"
                 onClick={onNextDate}
               >
                 Next Day
-                <GrNext />
+                <GrNext className="ml-2" />
               </Button>
             </div>
-            <table className="min-w-full border-collapse">
-              <thead className="bg-teal-500">
-                <tr>
-                  <th className="border border-gray-500 p-2"></th>
-                  {courts.map((court) => (
-                    <th
-                      key={court}
-                      className="border border-gray-500 p-2 font-bold"
-                    >
-                      {court}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {times.map((time) => (
-                  <tr key={time}>
-                    <td className="border border-gray-500 p-2 bg-teal-500 text-white font-bold">
-                      {time}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse">
+                <thead className="bg-teal-500">
+                  <tr>
+                    <th className="border border-gray-500 p-2 text-white"></th>
                     {courts.map((court) => (
-                      <td
-                        key={`${court}-${time}`}
-                        className={`border border-gray-500 p-2 cursor-pointer 
-                        ${
-                          isBooked(court, time)
-                            ? "bg-red-200 text-white cursor-not-allowed"
-                            : isSelected(court, time)
-                            ? "bg-gray-300"
-                            : "hover:bg-gray-200"
-                        }`}
-                        onClick={() =>
-                          !isBooked(court, time) && handleSlotClick(court, time)
-                        }
-                      ></td>
+                      <th
+                        key={court}
+                        className="border border-gray-500 p-2 font-bold text-white"
+                      >
+                        {court}
+                      </th>
                     ))}
                   </tr>
-                ))}
-                <tr>
-                  <td className="border border-gray-500 p-2">Cost</td>
-                  {courts.map((court) => (
-                    <td key={court} className="border border-gray-500 p-2">
-                      ${courtCosts[court]}
-                    </td>
+                </thead>
+                <tbody>
+                  {times.map((time) => (
+                    <tr key={time}>
+                      <td className="border border-gray-500 p-2 bg-teal-500 text-white font-bold">
+                        {time}
+                      </td>
+                      {courts.map((court) => {
+                        const status = getSlotStatus(court, time);
+                        return (
+                          <td
+                            key={`${court}-${time}`}
+                            className={`border border-gray-500 p-2 cursor-pointer transition-colors duration-200
+                              ${
+                                isPastTime(time)
+                                  ? "bg-gray-100 cursor-not-allowed"
+                                  : isBooked(court, time)
+                                  ? "bg-red-200 cursor-not-allowed"
+                                  : isSelected(court, time)
+                                  ? "bg-teal-200 hover:bg-teal-300"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            onClick={() =>
+                              !isBooked(court, time) &&
+                              !isPastTime(time) &&
+                              handleSlotClick(court, time)
+                            }
+                            title={`${status} - ${court} at ${time}`}
+                          >
+                            <div className="w-full h-8 flex items-center justify-center">
+                              {status !== "Available" && (
+                                <span className="text-sm text-gray-600">
+                                  {status}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
                   ))}
-                </tr>
-              </tbody>
-            </table>
+                  <tr className="bg-gray-50">
+                    <td className="border border-gray-500 p-2 font-bold">Cost</td>
+                    {courts.map((court) => (
+                      <td
+                        key={court}
+                        className="border border-gray-500 p-2 text-center font-medium"
+                      >
+                        ${courtCosts[court]}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

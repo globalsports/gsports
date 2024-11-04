@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { DatePicker } from "@/components/booking/DatePicker";
 import SlotBooking from "@/components/booking/SlotBooking";
 import { Skeleton } from "../ui/skeleton";
+import { SquarePayment } from "../payment/SquarePayment";
 
 export default function Booking() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
@@ -15,6 +16,8 @@ export default function Booking() {
     { court: string; time: string; cost: number }[]
   >([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
+
   React.useEffect(() => {
     setTimeout(() => setIsLoading(false), 2000);
   }, []);
@@ -45,8 +48,18 @@ export default function Booking() {
     handleSlotSelection(updatedSlots);
   };
 
+  const calculateTotal = () => {
+    return Number(selectedSlots.reduce((total, slot) => total + slot.cost, 0));
+  };
+
   const handleCheckout = () => {
-    console.log("Proceeding to checkout with slots:", selectedSlots);
+    setIsPaymentOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Clear selected slots and show success message
+    setSelectedSlots([]);
+    // You might want to add a toast notification here
   };
 
   return (
@@ -86,10 +99,17 @@ export default function Booking() {
                 className="mt-4 bg-teal-500 hover:bg-teal-700 w-full"
                 onClick={handleCheckout}
               >
-                Checkout
+                Checkout (${calculateTotal()})
               </Button>
             )}
           </div>
+          <SquarePayment
+            isOpen={isPaymentOpen}
+            onClose={() => setIsPaymentOpen(false)}
+            amount={calculateTotal()}
+            onPaymentSuccess={handlePaymentSuccess}
+            selectedSlots={selectedSlots}
+          />
         </div>
         <div className="col-span-2">
           <SlotBooking
