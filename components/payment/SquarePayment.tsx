@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -14,9 +15,9 @@ interface SquarePaymentProps {
   onClose: () => void;
   amount: number;
   onPaymentSuccess: () => void;
+  saveSelectedSlots: () => void;
   selectedSlots: { court: string; time: string; cost: number }[];
 }
-
 declare global {
   interface Window {
     Square: any;
@@ -29,15 +30,17 @@ export function SquarePayment({
   amount,
   onPaymentSuccess,
   selectedSlots,
+  saveSelectedSlots,
 }: SquarePaymentProps) {
   const [paymentForm, setPaymentForm] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast(); // Initialize useToast
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const script = document.createElement('script');
-    script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+    const script = document.createElement("script");
+    script.src = "https://sandbox.web.squarecdn.com/v1/square.js";
     script.onload = initializePaymentForm;
     document.body.appendChild(script);
 
@@ -50,28 +53,29 @@ export function SquarePayment({
     if (!window.Square) return;
 
     try {
-      const payments = window.Square.payments(process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID, process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID);
+      const payments = window.Square.payments(
+        process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID,
+        process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID
+      );
       const card = await payments.card();
-      await card.attach('#card-container');
+      await card.attach("#card-container");
 
       setPaymentForm(card);
     } catch (e) {
-      console.error('Failed to initialize Square payment form:', e);
+      console.error("Failed to initialize Square payment form:", e);
     }
   };
 
   const handlePaymentSubmit = async () => {
-      if (!paymentForm) return;
-      console.log('Payment form initialized');
+    if (!paymentForm) return;
     setIsLoading(true);
     try {
       const result = await paymentForm.tokenize();
-      if (result.status === 'OK') {
-        // Send the token to your server to complete the payment
-        const response = await fetch('/api/process-payment', {
-          method: 'POST',
+      if (result.status === "OK") {
+        const response = await fetch("/api/process-payment", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             sourceId: result.token,
@@ -81,16 +85,25 @@ export function SquarePayment({
         });
 
         const data = await response.json();
+
         if (data.success) {
+          saveSelectedSlots();
           onPaymentSuccess();
           onClose();
+          toast({
+            title: "Payment Successful",
+            description: "Your payment was completed successfully.",
+          });
         } else {
           throw new Error(data.error);
         }
       }
     } catch (e) {
-      console.error('Payment failed:', e);
-      // Handle payment error (show error message to user)
+      console.error("Payment failed:", e);
+      toast({
+        title: "Payment Failed",
+        description: "There was an issue processing your payment. Please try again.",
+      });
     }
     setIsLoading(false);
   };

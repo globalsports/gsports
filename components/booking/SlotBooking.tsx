@@ -14,6 +14,7 @@ interface SlotBookingProps {
   onTodayDate: () => void;
   onNextDate: () => void;
   isLoading: boolean;
+  initiallyBookedSlots: { court: string; time: string }[];
 }
 
 const SlotBooking = ({
@@ -24,7 +25,9 @@ const SlotBooking = ({
   onTodayDate,
   onNextDate,
   isLoading,
+  initiallyBookedSlots
 }: SlotBookingProps) => {
+  
   const courts = [
     "Court 1",
     "Court 2",
@@ -57,16 +60,6 @@ const SlotBooking = ({
     "Court 7": 24,
   };
 
-  const initiallyBookedSlots = [
-    { court: "Court 1", time: "2pm" },
-    { court: "Court 3", time: "5pm" },
-    { court: "Court 6", time: "8pm" },
-  ];
-
-  const [bookedSlots] = React.useState<{ court: string; time: string }[]>(
-    initiallyBookedSlots
-  );
-
   const isPastTime = (time: string) => {
     if (!date) return false;
     const currentDate = new Date();
@@ -77,7 +70,7 @@ const SlotBooking = ({
   };
 
   const isBooked = (court: string, time: string) => {
-    return bookedSlots.some(
+    return initiallyBookedSlots.some(
       (slot) => slot.court === court && slot.time === time
     );
   };

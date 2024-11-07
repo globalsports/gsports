@@ -9,6 +9,10 @@ import { DatePicker } from "@/components/booking/DatePicker";
 import SlotBooking from "@/components/booking/SlotBooking";
 import { Skeleton } from "../ui/skeleton";
 import { SquarePayment } from "../payment/SquarePayment";
+import { useSession } from "@/hooks/session-provider";
+import { supabase } from "@/utils/supabase/client";
+import signIn from "@/app/login/actions";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Booking() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
@@ -17,11 +21,60 @@ export default function Booking() {
   >([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
+  const [initiallyBookedSlots, setInitiallyBookedSlots] = React.useState<
+    { court: string; time: string }[]
+  >([]);
 
+  const { toast } = useToast();
+  const { session } = useSession();
+  const email = session?.user?.email;
+  const handleInserts = (payload: any) => {
+    const newSlot = payload.new;
+    if (date && newSlot.date === format(date, "yyyy-MM-dd")) {
+      setInitiallyBookedSlots((prev) => [
+        ...prev,
+        { court: newSlot.court, time: newSlot.time },
+      ]);
+    }
+  };
   React.useEffect(() => {
-    setTimeout(() => setIsLoading(false), 2000);
-  }, []);
+    const fetchBookedSlots = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("bookedSlots")
+        .select("court, time, date")
+        .eq("date", date ? format(date, "yyyy-MM-dd") : "");
 
+      if (error) {
+        console.error("Error fetching booked slots:", error);
+      } else if (data) {
+        setInitiallyBookedSlots(
+          data.map((slot: { court: string; time: string }) => ({
+            court: slot.court,
+            time: slot.time,
+          }))
+        );
+      }
+      setIsLoading(false);
+    };
+
+    fetchBookedSlots();
+
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel("bookedSlots")
+      .on(
+        "postgres_changes" as any,
+        { event: "INSERT", schema: "public", table: "bookedSlots" },
+        handleInserts
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [date]);
   const handlePreviousDate = () => {
     if (date) setDate(subDays(date, 1));
   };
@@ -53,13 +106,89 @@ export default function Booking() {
   };
 
   const handleCheckout = () => {
+    if (!email) {
+      localStorage.setItem("selectedSlots", JSON.stringify(selectedSlots));
+      signIn();
+    }
     setIsPaymentOpen(true);
   };
+  React.useEffect(() => {
+    // Check if there are stored slots after sign-in
+    const savedSlots = localStorage.getItem("selectedSlots");
+    if (savedSlots && !selectedSlots.length) {
+      setSelectedSlots(JSON.parse(savedSlots));
+      localStorage.removeItem("selectedSlots"); // Clean up local storage
+    }
+  }, [session, selectedSlots.length]);
 
-  const handlePaymentSuccess = () => {
-    // Clear selected slots and show success message
+  const checkDataAvailability = async (
+    court: string,
+    time: string,
+    date: string
+  ) => {
+    try {
+      const { data, error } = await supabase
+        .from("bookedSlots")
+        .select("*")
+        .eq("court", court)
+        .eq("time", time)
+        .eq("date", date)
+        .limit(1);
+
+      if (error) {
+        console.error("Error checking data availability:", error);
+        return false;
+      }
+      if(data && data.length > 0) {
+        toast({
+          title: "Slot already booked",
+          description: "This slot is already booked",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return data && data.length > 0 ? false : true;
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      return false;
+    }
+  };
+  
+  const saveSelectedSlots = async () => {
+    const slotsToSave = selectedSlots.map((slot) => ({
+      court: slot.court,
+      time: slot.time,
+      date: date ? format(date, "yyyy-MM-dd") : "",
+      userEmail: email,
+      courtName: slot.court,
+    }));
+    slotsToSave.forEach(async (slot) => {
+      const isDataAvailable = await checkDataAvailability(
+        slot.court,
+        slot.time,
+        slot.date
+      );
+      if (isDataAvailable) {
+        const { error: insertError } = await supabase
+          .from("bookedSlots")
+          .insert(slotsToSave);
+        if (insertError) {
+          console.error("Error saving slots:", insertError);
+          return false;
+        } else {
+          toast({
+            title: "Success",
+            description: "Slots saved successfully!",
+          });
+        }
+      }
+    });
+  };
+
+  const handlePaymentSuccess = async () => {
     setSelectedSlots([]);
-    // You might want to add a toast notification here
+    setIsPaymentOpen(false);
   };
 
   return (
@@ -109,6 +238,7 @@ export default function Booking() {
             amount={calculateTotal()}
             onPaymentSuccess={handlePaymentSuccess}
             selectedSlots={selectedSlots}
+            saveSelectedSlots={saveSelectedSlots}
           />
         </div>
         <div className="col-span-2">
@@ -120,6 +250,7 @@ export default function Booking() {
             onTodayDate={handleTodayDate}
             onNextDate={handleNextDate}
             isLoading={isLoading}
+            initiallyBookedSlots={initiallyBookedSlots}
           />
         </div>
       </div>
