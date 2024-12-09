@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/ui/navbar";
-import { Poppins } from 'next/font/google';
+import { Poppins } from "next/font/google";
 import { SessionProvider } from "@/hooks/session-provider";
 import { Toaster } from "@/components/ui/toaster";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 const poppins = Poppins({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-poppins',
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900']
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-poppins",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -24,15 +25,16 @@ export default async function RootLayout({
 }>) {
   return (
     <SessionProvider>
-    <html lang="en">
-      <body
-        className={`${poppins.className} antialiased bg-teal-50 bg-opacity-80`}
-      >
-        <Navbar/>
-        <div className="max-w-7xl sm:mx-auto mx-5">{children}</div>
-        <Toaster />
-      </body>
-    </html>
+      <html lang="en">
+        <body className={`${poppins.className} antialiased`}>
+          <Navbar />
+          <div className="max-w-7xl sm:mx-auto mx-5 py-6">
+          <Breadcrumb />
+          </div>
+          <div>{children}</div>
+          <Toaster />
+        </body>
+      </html>
     </SessionProvider>
   );
 }

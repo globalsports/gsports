@@ -1,11 +1,9 @@
 "use client";
 import * as React from "react";
 import { format } from "date-fns";
-import { addDays, subDays } from "date-fns";
 import { FaTrashAlt } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DatePicker } from "@/components/booking/DatePicker";
 import SlotBooking from "@/components/booking/SlotBooking";
 import { Skeleton } from "../ui/skeleton";
 import { SquarePayment } from "../payment/SquarePayment";
@@ -13,9 +11,10 @@ import { useSession } from "@/hooks/session-provider";
 import { supabase } from "@/utils/supabase/client";
 import signIn from "@/app/login/actions";
 import { useToast } from "@/hooks/use-toast";
+import DateNavigator from "./DateNavigator";
 
 export default function Booking() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date, setDate] = React.useState<Date>(new Date());
   const [selectedSlots, setSelectedSlots] = React.useState<
     { court: string; time: string; cost: number }[]
   >([]);
@@ -75,17 +74,6 @@ export default function Booking() {
       supabase.removeChannel(subscription);
     };
   }, [date]);
-  const handlePreviousDate = () => {
-    if (date) setDate(subDays(date, 1));
-  };
-
-  const handleNextDate = () => {
-    if (date) setDate(addDays(date, 1));
-  };
-
-  const handleTodayDate = () => {
-    setDate(new Date());
-  };
 
   const handleSlotSelection = (
     slots: { court: string; time: string; cost: number }[]
@@ -112,6 +100,7 @@ export default function Booking() {
     }
     setIsPaymentOpen(true);
   };
+
   React.useEffect(() => {
     // Check if there are stored slots after sign-in
     const savedSlots = localStorage.getItem("selectedSlots");
@@ -139,7 +128,7 @@ export default function Booking() {
         console.error("Error checking data availability:", error);
         return false;
       }
-      if(data && data.length > 0) {
+      if (data && data.length > 0) {
         toast({
           title: "Slot already booked",
           description: "This slot is already booked",
@@ -154,7 +143,7 @@ export default function Booking() {
       return false;
     }
   };
-  
+
   const saveSelectedSlots = async () => {
     const slotsToSave = selectedSlots.map((slot) => ({
       court: slot.court,
@@ -181,9 +170,11 @@ export default function Booking() {
             title: "Success",
             description: "Slots saved successfully!",
           });
+          return true;
         }
       }
     });
+    return false;
   };
 
   const handlePaymentSuccess = async () => {
@@ -192,68 +183,54 @@ export default function Booking() {
   };
 
   return (
-    <>
-      <div className="my-10 sm:grid grid-cols-3 sm:gap-10">
-        <div>
-          {isLoading ? (
-            <Skeleton className="h-12 w-full mb-4" />
-          ) : (
-            <DatePicker date={date} setDate={setDate} />
-          )}
-
-          {/* Display selected slots */}
-          <div className="my-4 grid gap-2">
-            {isLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20 w-full mb-2" />
-                )) // Skeleton for each slot card
-              : selectedSlots.map((slot, index) => (
-                  <Card key={index} className="p-2 relative">
-                    <p className="border rounded px-2 py-1 inline-flex bg-teal-500 text-white">
-                      {date && format(date, "PPP")}
-                    </p>
-                    <p className="inline-flex mx-2">${slot.cost}</p>
-                    <p className="font-bold">Court: {slot.court}</p>
-                    <p>Time: {slot.time}</p>
-                    <button
-                      onClick={() => handleRemoveSlot(slot.court, slot.time)}
-                      className="absolute top-2 right-2 font-bold"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </Card>
-                ))}
-            {selectedSlots.length > 0 && (
-              <Button
-                className="mt-4 bg-teal-500 hover:bg-teal-700 w-full"
-                onClick={handleCheckout}
-              >
-                Checkout (${calculateTotal()})
-              </Button>
-            )}
-          </div>
-          <SquarePayment
-            isOpen={isPaymentOpen}
-            onClose={() => setIsPaymentOpen(false)}
-            amount={calculateTotal()}
-            onPaymentSuccess={handlePaymentSuccess}
-            selectedSlots={selectedSlots}
-            saveSelectedSlots={saveSelectedSlots}
-          />
-        </div>
-        <div className="col-span-2">
-          <SlotBooking
-            date={date}
-            onSlotSelect={handleSlotSelection}
-            selectedSlots={selectedSlots}
-            onPreviousDate={handlePreviousDate}
-            onTodayDate={handleTodayDate}
-            onNextDate={handleNextDate}
-            isLoading={isLoading}
-            initiallyBookedSlots={initiallyBookedSlots}
-          />
-        </div>
+    <div className="sm:grid sm:grid-cols-4 sm:gap-10 max-w-7xl sm:mx-auto mx-5">
+      <div className="sm:col-span-3 flex flex-col gap-4">
+        <DateNavigator currentDate={date} onDateSelect={setDate} />
+        <SlotBooking
+          date={date}
+          onSlotSelect={handleSlotSelection}
+          selectedSlots={selectedSlots}
+          isLoading={isLoading}
+          initiallyBookedSlots={initiallyBookedSlots}
+        />
       </div>
-    </>
+      <div>
+        {/* Display selected slots */}
+        <div className="my-4 grid gap-2">
+          {selectedSlots.map((slot, index) => (
+            <Card key={index} className="p-2 relative">
+              <p className="border rounded px-2 py-1 inline-flex bg-teal-500 text-white">
+                {date && format(date, "PPP")}
+              </p>
+              <p className="inline-flex mx-2">${slot.cost}</p>
+              <p className="font-bold">Court: {slot.court}</p>
+              <p>Time: {slot.time}</p>
+              <button
+                onClick={() => handleRemoveSlot(slot.court, slot.time)}
+                className="absolute top-2 right-2 font-bold"
+              >
+                <FaTrashAlt />
+              </button>
+            </Card>
+          ))}
+          {selectedSlots.length > 0 && (
+            <Button
+              className="mt-4 bg-teal-500 hover:bg-teal-700 w-full"
+              onClick={handleCheckout}
+            >
+              Checkout (${calculateTotal()})
+            </Button>
+          )}
+        </div>
+        <SquarePayment
+          isOpen={isPaymentOpen}
+          onClose={() => setIsPaymentOpen(false)}
+          amount={calculateTotal()}
+          onPaymentSuccess={handlePaymentSuccess}
+          selectedSlots={selectedSlots}
+          saveSelectedSlots={saveSelectedSlots}
+        />
+      </div>
+    </div>
   );
 }

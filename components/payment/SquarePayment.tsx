@@ -2,7 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ interface SquarePaymentProps {
   onClose: () => void;
   amount: number;
   onPaymentSuccess: () => void;
-  saveSelectedSlots: () => void;
+  saveSelectedSlots: () => Promise<boolean>;
   selectedSlots: { court: string; time: string; cost: number }[];
 }
 declare global {
@@ -70,39 +70,44 @@ export function SquarePayment({
     if (!paymentForm) return;
     setIsLoading(true);
     try {
-      const result = await paymentForm.tokenize();
-      if (result.status === "OK") {
-        const response = await fetch("/api/process-payment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            sourceId: result.token,
-            amount,
-            slots: selectedSlots,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          saveSelectedSlots();
-          onPaymentSuccess();
-          onClose();
-          toast({
-            title: "Payment Successful",
-            description: "Your payment was completed successfully.",
+      const slotSaved = await saveSelectedSlots();
+      if (!slotSaved) {
+        throw new Error("Failed to save selected slots.");
+      } else {
+        const result = await paymentForm.tokenize();
+        if (result.status === "OK") {
+          const response = await fetch("/api/process-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sourceId: result.token,
+              amount,
+              slots: selectedSlots,
+            }),
           });
-        } else {
-          throw new Error(data.error);
+
+          const data = await response.json();
+
+          if (data.success) {
+            onPaymentSuccess();
+            onClose();
+            toast({
+              title: "Payment Successful",
+              description: "Your payment was completed successfully.",
+            });
+          } else {
+            throw new Error(data.error);
+          }
         }
       }
     } catch (e) {
       console.error("Payment failed:", e);
       toast({
         title: "Payment Failed",
-        description: "There was an issue processing your payment. Please try again.",
+        description:
+          "There was an issue processing your payment. Please try again.",
       });
     }
     setIsLoading(false);
@@ -130,7 +135,10 @@ export function SquarePayment({
           </Card>
 
           <div className="space-y-4">
-            <div id="card-container" className="min-h-[100px] border rounded p-4"></div>
+            <div
+              id="card-container"
+              className="min-h-[100px] border rounded p-4"
+            ></div>
             <Button
               onClick={handlePaymentSubmit}
               disabled={isLoading}
