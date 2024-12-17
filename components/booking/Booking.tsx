@@ -183,7 +183,7 @@ export default function Booking() {
   };
 
   return (
-    <div className="sm:grid sm:grid-cols-4 sm:gap-10 max-w-7xl sm:mx-auto mx-5">
+    <div className="sm:grid sm:grid-cols-4 sm:gap-10 mx-16">
       <div className="sm:col-span-3 flex flex-col gap-4">
         <DateNavigator currentDate={date} onDateSelect={setDate} />
         <SlotBooking
@@ -196,15 +196,22 @@ export default function Booking() {
       </div>
       <div>
         {/* Display selected slots */}
-        <div className="my-4 grid gap-2">
+        <div className="my-4 grid gap-2 place-items-center">
           {selectedSlots.map((slot, index) => (
-            <Card key={index} className="p-2 relative">
-              <p className="border rounded px-2 py-1 inline-flex bg-teal-500 text-white">
-                {date && format(date, "PPP")}
-              </p>
-              <p className="inline-flex mx-2">${slot.cost}</p>
-              <p className="font-bold">Court: {slot.court}</p>
-              <p>Time: {slot.time}</p>
+            <Card
+              key={index}
+              className="rounded-xl border-[#BDCDD6] shadow-md p-4 relative h-[120px] w-[375px] flex flex-col justify-between"
+            >
+              <div>
+                <p>Court: {slot.court}</p>
+                <p>Slot: {slot.time}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">
+                  {date && format(date, "PPP")}
+                </p>
+                <p className="font-semibold">${slot.cost}</p>
+              </div>
               <button
                 onClick={() => handleRemoveSlot(slot.court, slot.time)}
                 className="absolute top-2 right-2 font-bold"
@@ -215,10 +222,10 @@ export default function Booking() {
           ))}
           {selectedSlots.length > 0 && (
             <Button
-              className="mt-4 bg-teal-500 hover:bg-teal-700 w-full"
+              className="mt-4 bg-[#BDCDD6] hover:bg-[#a2b4be] w-[242px] h-[50px] rounded-full"
               onClick={handleCheckout}
             >
-              Checkout (${calculateTotal()})
+              Checkout Now (${calculateTotal()})
             </Button>
           )}
         </div>

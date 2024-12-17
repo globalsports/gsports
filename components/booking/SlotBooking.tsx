@@ -82,28 +82,29 @@ const SlotBooking = ({
   const handleDateSelect = (selectedDate: Date) => {};
 
   const getSlotStatusClass = (court: string, time: string) => {
-    if (isPastTime(time)) return "bg-gray-200 text-gray-400 cursor-not-allowed";
+    if (isPastTime(time)) return "bg-[#ECECEC] text-gray-400 cursor-not-allowed";
     if (isBooked(court, time))
       return "bg-[#ececec] text-red-700 cursor-not-allowed";
-    if (isSelected(court, time)) return "bg-green-200 text-green-800";
+    if (isSelected(court, time)) return "bg-[#BDCDD6]";
     return "bg-white hover:bg-gray-200";
   };
 
   return (
     <div className="">
       {/* Grid Layout */}
-      <div className="grid grid-cols-8 gap-4">
+      <div className="grid grid-cols-8 gap-[10px]">
         {/* Time Labels */}
         <div className="flex flex-col gap-3">
+          <div className="w-[154px] h-[72px]"></div>
           {times.map((time) => (
             <div
               key={time}
-              className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded shadow-lg"
+              className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded-lg shadow-lg w-[154px] h-[72px]"
             >
               {time}
             </div>
           ))}
-          <div className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded shadow-lg">
+          <div className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded-lg shadow-lg w-[154px] h-[72px]">
             Cost
           </div>
         </div>
@@ -111,11 +112,15 @@ const SlotBooking = ({
         {/* Courts */}
         {courts.map((court) => (
           <div key={court} className="flex flex-col gap-3">
+            
+            <div className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded-lg shadow-lg w-[154px] h-[72px]">
+              {court}
+            </div>
             {times.map((time) => {
               return (
                 <div
                   key={`${court}-${time}`}
-                  className={`flex items-center justify-center py-4 px-2 rounded shadow-lg cursor-pointer flex-1 ${getSlotStatusClass(
+                  className={`flex items-center justify-center py-4 px-2 rounded-lg shadow-lg cursor-pointer flex-1 w-[154px] h-[72px] ${getSlotStatusClass(
                     court,
                     time
                   )}`}
@@ -136,7 +141,7 @@ const SlotBooking = ({
                 </div>
               );
             })}
-            <div className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded shadow-lg">
+            <div className="flex items-center justify-center font-bold bg-[#bdcdd6] py-4 px-2 rounded-lg shadow-lg w-[154px] h-[72px]">
               ${courtCosts[court]}
             </div>
           </div>

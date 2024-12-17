@@ -8,8 +8,9 @@ const Breadcrumb = () => {
   const segments = pathname.split("/").filter((segment) => segment); // Split path into segments
 
   const generateLabel = (segment: string) => {
-    // Optionally transform the segment into a readable label
-    return segment
+    // Decode the segment to make it readable and replace dashes or special characters
+    const decodedSegment = decodeURIComponent(segment); // Decodes the URL-encoded part
+    return decodedSegment
       .replace(/-/g, " ") // Replace dashes with spaces
       .replace(/^\w/, (c) => c.toUpperCase()); // Capitalize first letter
   };
